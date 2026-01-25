@@ -1,0 +1,353 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="description" content="SafeSense - Universal Biomechanics Platform">
+  <title>SafeSense - Universal Biomechanics Platform</title>
+  <link rel="stylesheet" href="css/style.css">
+  
+  <!-- MediaPipe Pose AI -->
+  <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@mediapipe/control_utils/control_utils.js" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@mediapipe/drawing_utils/drawing_utils.js" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@mediapipe/pose/pose.js" crossorigin="anonymous"></script>
+</head>
+<body>
+  <!-- Loading Screen -->
+  <div id="loading-screen" class="loading-screen">
+    <div class="loading-content">
+      <div class="logo">🛡️</div>
+      <h1>SafeSense</h1>
+      <p>Universal Biomechanics Platform</p>
+      <div class="loading-spinner"></div>
+    </div>
+  </div>
+
+  <!-- Mode Selection Screen -->
+  <div id="mode-selection" class="mode-selection hidden">
+    <div class="mode-selection-content">
+      <div class="mode-header">
+        <span class="logo-icon">🛡️</span>
+        <h1>SafeSense</h1>
+        <p class="tagline">Choose Your Protection Mode</p>
+      </div>
+
+      <div class="mode-cards">
+        <!-- GYM MODE -->
+        <div class="mode-card" data-mode="gym">
+          <div class="mode-icon">🏋️</div>
+          <h2>GYM MODE</h2>
+          <p class="mode-subtitle">Form & Injury Prevention</p>
+          <ul class="mode-features">
+            <li>✓ Left/Right symmetry tracking</li>
+            <li>✓ Rep counting & tempo</li>
+            <li>✓ Voice form corrections</li>
+            <li>✓ Ego-lift warnings</li>
+          </ul>
+          <div class="mode-example">
+            <span class="example-label">Example Alert:</span>
+            <span class="example-text">"PUSH YOUR LEFT SIDE!"</span>
+          </div>
+        </div>
+
+        <!-- DRIVE MODE -->
+        <div class="mode-card" data-mode="drive">
+          <div class="mode-icon">🚗</div>
+          <h2>DRIVE MODE</h2>
+          <p class="mode-subtitle">Fatigue & Drowsiness Detection</p>
+          <ul class="mode-features">
+            <li>✓ Head nod detection</li>
+            <li>✓ Eye closure tracking</li>
+            <li>✓ Micro-sleep alerts</li>
+            <li>✓ Break reminders</li>
+          </ul>
+          <div class="mode-example">
+            <span class="example-label">Example Alert:</span>
+            <span class="example-text">"DANGER! PULL OVER NOW!"</span>
+          </div>
+        </div>
+
+        <!-- LIFE MODE -->
+        <div class="mode-card" data-mode="life">
+          <div class="mode-icon">👴</div>
+          <h2>LIFE MODE</h2>
+          <p class="mode-subtitle">Fall Detection & Emergency</p>
+          <ul class="mode-features">
+            <li>✓ 📱 Phone in POCKET - no camera!</li>
+            <li>✓ Fall impact detection (accelerometer)</li>
+            <li>✓ Post-fall stillness monitoring</li>
+            <li>✓ Auto 911 call with countdown</li>
+          </ul>
+          <div class="mode-example">
+            <span class="example-label">Example Alert:</span>
+            <span class="example-text">"Calling 911 in 60 seconds"</span>
+          </div>
+          <div class="mode-note">
+            <small>🔋 Uses motion sensors, not camera</small>
+          </div>
+        </div>
+      </div>
+
+      <div class="mode-footer">
+        <p>🔒 100% Private - All AI runs on YOUR device</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Main App -->
+  <div id="app" class="app hidden">
+    <!-- Header -->
+    <header class="header">
+      <div class="header-content">
+        <button id="back-button" class="back-button" title="Change Mode">
+          ← Back
+        </button>
+        <div class="logo-section">
+          <span class="logo-icon">🛡️</span>
+          <h1 class="app-title">SafeSense</h1>
+          <span id="current-mode-badge" class="mode-badge">GYM</span>
+        </div>
+        <div class="header-actions">
+          <button id="voice-toggle" class="voice-toggle active" title="Toggle Voice">
+            🔊
+          </button>
+        </div>
+      </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="main-content">
+      <!-- Video/Camera Container -->
+      <div class="video-section">
+        <div class="video-container">
+          <video id="video" class="video-feed" playsinline autoplay muted></video>
+          <canvas id="canvas" class="overlay-canvas"></canvas>
+          
+          <!-- Status Overlay - Changes per mode -->
+          <div id="status-overlay" class="status-overlay">
+            <div id="status-indicator" class="status-indicator good">
+              <div class="status-icon">✓</div>
+              <div class="status-text">Ready</div>
+            </div>
+          </div>
+
+          <!-- Mode-specific overlay info -->
+          <div id="mode-overlay" class="mode-overlay">
+            <!-- Populated by JS based on mode -->
+          </div>
+
+          <!-- Camera Controls -->
+          <div class="video-controls">
+            <button id="start-camera" class="btn btn-primary btn-large">
+              <span class="btn-icon">▶</span>
+              <span>START PROTECTION</span>
+            </button>
+            <button id="stop-camera" class="btn btn-danger btn-large hidden">
+              <span class="btn-icon">■</span>
+              <span>STOP</span>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Metrics Panel - Context-Aware -->
+      <div class="metrics-section">
+        <div class="metrics-panel">
+          <h3 class="panel-title" id="metrics-title">Live Metrics</h3>
+          
+          <!-- GYM METRICS -->
+          <div id="gym-metrics" class="mode-metrics">
+            <div class="metric-card highlight">
+              <div class="metric-label">SYMMETRY SCORE</div>
+              <div class="metric-value" id="symmetry-score">100%</div>
+              <div class="metric-bar">
+                <div id="symmetry-bar" class="metric-bar-fill" style="width: 100%"></div>
+              </div>
+            </div>
+
+            <div class="metric-row">
+              <div class="metric-card half">
+                <div class="metric-label">LEFT SIDE</div>
+                <div class="metric-value small" id="left-score">--</div>
+              </div>
+              <div class="metric-card half">
+                <div class="metric-label">RIGHT SIDE</div>
+                <div class="metric-value small" id="right-score">--</div>
+              </div>
+            </div>
+
+            <div class="metric-card">
+              <div class="metric-label">REP COUNT</div>
+              <div class="metric-value" id="rep-count">0</div>
+            </div>
+
+            <div class="metric-card">
+              <div class="metric-label">FORM QUALITY</div>
+              <div class="metric-value" id="form-quality">READY</div>
+              <div class="metric-status" id="form-status">Start exercising to analyze</div>
+            </div>
+
+            <div class="metric-card">
+              <div class="metric-label">SESSION TIME</div>
+              <div class="metric-value" id="session-time-gym">00:00</div>
+            </div>
+          </div>
+
+          <!-- DRIVE METRICS -->
+          <div id="drive-metrics" class="mode-metrics hidden">
+            <div class="metric-card highlight danger-zone">
+              <div class="metric-label">ALERTNESS LEVEL</div>
+              <div class="metric-value" id="alertness-level">100%</div>
+              <div class="metric-bar">
+                <div id="alertness-bar" class="metric-bar-fill alert-bar" style="width: 100%"></div>
+              </div>
+            </div>
+
+            <div class="metric-card">
+              <div class="metric-label">HEAD POSITION</div>
+              <div class="metric-value" id="head-position">UPRIGHT</div>
+              <div class="metric-status" id="head-status">Monitoring...</div>
+            </div>
+
+            <div class="metric-card">
+              <div class="metric-label">EYES STATUS</div>
+              <div class="metric-value" id="eyes-status">OPEN</div>
+              <div class="metric-status" id="blink-rate">Normal blink rate</div>
+            </div>
+
+            <div class="metric-card warning-card">
+              <div class="metric-label">DROWSY EVENTS</div>
+              <div class="metric-value" id="drowsy-count">0</div>
+              <div class="metric-status">Head drops detected</div>
+            </div>
+
+            <div class="metric-card">
+              <div class="metric-label">DRIVE TIME</div>
+              <div class="metric-value" id="session-time-drive">00:00</div>
+              <div class="metric-status" id="break-reminder">Break in 2 hours</div>
+            </div>
+          </div>
+
+          <!-- LIFE METRICS (Sensor-based) -->
+          <div id="life-metrics" class="mode-metrics hidden">
+            <div class="metric-card highlight life-highlight">
+              <div class="metric-label">STATUS</div>
+              <div class="metric-value" id="life-status">SAFE</div>
+              <div class="metric-status" id="life-status-detail">Monitoring active</div>
+            </div>
+
+            <div class="sensor-info-card">
+              <div class="sensor-info-icon">📱</div>
+              <div class="sensor-info-text">
+                <strong>Phone in Pocket Mode</strong>
+                <p>Using accelerometer for fall detection</p>
+              </div>
+            </div>
+
+            <div class="metric-card">
+              <div class="metric-label">MOVEMENT LEVEL</div>
+              <div class="metric-value" id="mobility-score">--</div>
+              <div class="metric-bar">
+                <div id="mobility-bar" class="metric-bar-fill" style="width: 0%"></div>
+              </div>
+            </div>
+
+            <div class="metric-card">
+              <div class="metric-label">MOVEMENT DETECTED</div>
+              <div class="metric-value" id="movement-status">YES</div>
+            </div>
+
+            <div class="metric-card">
+              <div class="metric-label">LAST ACTIVITY</div>
+              <div class="metric-value small" id="last-activity">Just now</div>
+            </div>
+
+            <div class="metric-card">
+              <div class="metric-label">MONITORING TIME</div>
+              <div class="metric-value" id="session-time-life">00:00</div>
+            </div>
+
+            <div class="emergency-contacts">
+              <div class="metric-label">EMERGENCY CONTACTS</div>
+              <div class="contact-list">
+                <div class="contact">👨‍⚕️ 911 Emergency</div>
+                <div class="contact">👨‍👩‍👦 Family (Demo)</div>
+              </div>
+            </div>
+
+            <button id="test-fall-btn" class="btn btn-danger btn-test">
+              🧪 Simulate Fall (Demo)
+            </button>
+          </div>
+        </div>
+
+        <!-- Quick Tips -->
+        <div class="tips-panel" id="tips-panel">
+          <h4>💡 Tips</h4>
+          <p id="tip-text">Select a mode to see relevant tips</p>
+        </div>
+      </div>
+    </main>
+
+    <!-- Voice Feedback Indicator -->
+    <div id="voice-indicator" class="voice-indicator hidden">
+      <div class="voice-pulse"></div>
+      <span id="voice-text">Speaking...</span>
+    </div>
+
+    <!-- Alerts Container -->
+    <div id="alerts-container" class="alerts-container"></div>
+  </div>
+
+  <!-- Emergency Modal (Life Mode) -->
+  <div id="emergency-modal" class="modal hidden">
+    <div class="modal-content emergency">
+      <div class="emergency-header">
+        <div class="emergency-icon pulse">🆘</div>
+        <h2>FALL DETECTED</h2>
+      </div>
+      <p>Are you okay? Emergency services will be contacted automatically.</p>
+      <div class="emergency-countdown">
+        <span id="countdown">60</span>
+        <span class="countdown-label">seconds</span>
+      </div>
+      <div class="emergency-actions">
+        <button id="cancel-emergency" class="btn btn-large btn-success">
+          ✓ I'M OKAY - CANCEL
+        </button>
+        <button id="call-now" class="btn btn-large btn-danger">
+          📞 CALL 911 NOW
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Drowsy Alert Modal (Drive Mode) -->
+  <div id="drowsy-modal" class="modal hidden">
+    <div class="modal-content drowsy">
+      <div class="drowsy-alert">
+        <div class="alert-strobe"></div>
+        <div class="drowsy-icon">⚠️</div>
+        <h2>WAKE UP!</h2>
+        <p>DROWSINESS DETECTED</p>
+        <h3>PULL OVER IMMEDIATELY</h3>
+        <button id="acknowledge-drowsy" class="btn btn-large btn-warning">
+          I'M AWAKE - DISMISS
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Scripts -->
+  <script src="js/voice-engine.js"></script>
+  <script src="js/biomechanics-engine.js"></script>
+  <script src="js/gym-analyzer.js"></script>
+  <script src="js/drive-analyzer.js"></script>
+  <script src="js/life-analyzer.js"></script>
+  <script src="js/sensor-controller.js"></script>
+  <script src="js/ui-controller.js"></script>
+  <script src="js/camera-controller.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>
