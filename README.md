@@ -6,7 +6,7 @@
 [![MediaPipe](https://img.shields.io/badge/MediaPipe-Pose-blue?style=for-the-badge&logo=google)](https://google.github.io/mediapipe/)
 [![HTML5](https://img.shields.io/badge/html5-%23E34F26.svg?style=for-the-badge&logo=html5&logoColor=white)](https://developer.mozilla.org/en-US/docs/Web/HTML)
 
-![SafeSense Banner](https://via.placeholder.com/1200x600?text=SafeSense+Universal+Biomechanics+Platform)
+
 
 ## 🚀 Try it out!
 You can test the application immediately on our live deployment:  
