@@ -1,11 +1,7 @@
 # 🛡️ SafeSense
 > **Universal Biomechanics Platform** — protecting you in the gym, on the road, and at home using AI and client‑side sensors. [page:0]
 
-[![Live Demo](https://img.shields.io/badge/DEMO-Run%20Live%20App-success?style=for-the-badge&logo=netlify)](https://delightful-tartufo-573112.netlify.app/) [page:0]  
-[![JavaScript](https://img.shields.io/badge/javascript-%23323330.svg?style=for-the-badge&logo=javascript&logoColor=%23F7DF1E)](https://developer.mozilla.org/en-US/docs/Web/JavaScript)  
-[![MediaPipe](https://img.shields.io/badge/MediaPipe-Pose-blue?style=for-the-badge&logo=google)](https://google.github.io/mediapipe/)  
-[![HTML5](https://img.shields.io/badge/html5-%23E34F26.svg?style=for-the-badge&logo=html5&logoColor=white)](https://developer.mozilla.org/en-US/docs/Web/HTML)  
-
+[![Live Demo](https://img.shields.io/badge/DEMO-Run%20Live%20App-success?style=for-the-badge&logo=netlify)](https://delightful-tartufo-573112.netlify.app/) [![JavaScript](https://img.shields.io/badge/javascript-%23323330.svg?style=for-the-badge&logo=javascript&logoColor=%23F7DF1E)](https://developer.mozilla.org/en-US/docs/Web/JavaScript) [![MediaPipe](https://img.shields.io/badge/MediaPipe-Pose-blue?style=for-the-badge&logo=google)](https://google.github.io/mediapipe/) [![HTML5](https://img.shields.io/badge/html5-%23E34F26.svg?style=for-the-badge&logo=html5&logoColor=white)](https://developer.mozilla.org/en-US/docs/Web/HTML)
 ---
 
 ## 🚀 Try it out
